@@ -1,0 +1,111 @@
+name: 'media'
+
+services:
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    restart: unless-stopped
+    environment:
+      - TZ=America/Sao_Paulo
+      - WEBUI_PORT=8080
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /1tb/config/qbittorrent:/config
+      - /1tb/torrents:/downloads
+    ports:
+      - '8080:8080'
+      - '62609:62609'
+
+  bazarr:
+    image: ghcr.io/linuxserver/bazarr:latest
+    restart: unless-stopped
+    environment:
+      - TZ=America/Sao_Paulo
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /1tb/videos/radarr:/movies
+      - /1tb/videos/sonarr:/tv
+      - /1tb/config/bazarr:/config
+    ports:
+      - '6767:6767'
+
+  prowlarr:
+    image: ghcr.io/hotio/prowlarr:latest
+    restart: unless-stopped
+    environment:
+      - TZ=America/Sao_Paulo
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /1tb/config/prowlarr:/config
+    ports:
+      - '9696:9696'
+
+  radarr:
+    image: ghcr.io/linuxserver/radarr:latest
+    restart: unless-stopped
+    depends_on:
+      - qbittorrent
+    environment:
+      - TZ=America/Sao_Paulo
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /1tb/config/radarr:/config
+      - /1tb/torrents:/downloads
+      - /1tb/videos/radarr:/movies
+    ports:
+      - '7878:7878'
+
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr:latest
+    restart: unless-stopped
+    depends_on:
+      - qbittorrent
+    environment:
+      - TZ=America/Sao_Paulo
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /1tb/config/sonarr:/config
+      - /1tb/videos/sonarr:/tv
+      - /1tb/torrents:/downloads
+    ports:
+      - '8989:8989'
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /1tb/config/jellyfin:/config
+      - /1tb/videos/sonarr:/data/tvshows
+      - /1tb/videos/radarr:/data/movies
+    ports:
+      - 8096:8096
+      - 7359:7359/udp
+#      - 1900:1900/udp
+    restart: unless-stopped
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    ports:
+      - 5055:5055
+    volumes:
+      - /config/jellyseerr:/app/config
+    restart: unless-stopped
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    environment:
+      - TZ=America/Sao_Paulo
+    ports:
+      - 8191:8191
+    restart: unless-stopped
