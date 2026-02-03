@@ -20,7 +20,7 @@ echo Docker Desktop is ready!
 
 echo.
 echo [2/2] Starting docker-compose...
-wsl -e sh -c "cd /1tb && docker-compose up -d"
+wsl -e sh -c "cd /1tb && while ! docker info >/dev/null 2>&1; do echo 'Waiting for Docker daemon in WSL...'; sleep 2; done && echo 'Stopping existing containers...' && docker-compose down && sleep 5 && echo 'Starting containers...' && docker-compose up -d"
 
 echo.
 echo ========================================
